@@ -3,10 +3,17 @@ from fastai.text import *
 from fastai.core import *
 import tensorflow
 import torch
-import opencv
 import csv
+import pandas as pd
 
+#path = 'C:\\Users\\%USERNAME\\Documents\\GitHub\\ai-emotion-recognition\\Data'
 
-path = 'C:\\Users\\%USERNAME\\Documents\\GitHub\\ai-emotion-recognition\\Data'
+#Reads csv data files
+dataTrain = pd.read_csv("Data\\faceexp-comparison-data-train-public.csv", error_bad_lines=False)
+dataTest = pd.read_csv("Data\\faceexp-comparison-data-test-public.csv", error_bad_lines=False)
 
-dataLearn = TextLMDataBunch.from_csv(Path(path), 'faceexp-comparison-data-test-public.csv')
+fiveDataTrain = dataTrain.head()
+print(fiveDataTrain)
+
+fiveDataTest = dataTest.head()
+print(fiveDataTest)
