@@ -7,7 +7,7 @@ import cv2
 import csv
 import pandas as pd
 
-#path = 'C:\\Users\\%USERNAME\\Documents\\GitHub\\ai-emotion-recognition\\Data'
+#path = 'C:\\Users\\%USERNAME%\\Documents\\GitHub\\ai-emotion-recognition\\Data'
 
 #Reads csv data files
 dataTrain = pd.read_csv("Data\\faceexp-comparison-data-train-public.csv", error_bad_lines=False)
