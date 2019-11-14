@@ -5,14 +5,12 @@ import pandas as pd
 import urllib
 import getpass
 
-#Reads csv data files
-dataTrain = pd.read_csv("Data\\faceexp-comparison-data-train-public.csv", error_bad_lines=False)
-dataTest = pd.read_csv("Data\\faceexp-comparison-data-test-public.csv", error_bad_lines=False)
-
-
+'''
+Checks whether or not a face is present in the image
+'''
 def CheckForFace(url):
     try:
-        image = io.imread(url)
+        image = io.imread(url)                         #Grab the image located at the url
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -29,42 +27,49 @@ def CheckForFace(url):
         )
 
         if ((len(faces)) == 0):
-            #print("FASLE")
+            ###print("FASLE")     ###DEBUGGING: See the results of the face detection
             return False
         else:
-            #print("TRUE")
+            #print("TRUE")        ###DEBUGGING: See the results of the face detection
             return True
-    except urllib.error.HTTPError:
-        return False
+    except urllib.error.HTTPError: #In the case the url leads to a dead page
+        return False               #Then there exists no face at the link
 
-#print(dataTrain.iloc[:,[0,5,10]])
+'''
+Given the FEC dataset, check whether the URL contains a face and if not remove the row from the csv
+'''
+def clean_data(data):
+    AFK
+    '''
+    Some image links appear in more then one row. In order to optimize the time taken in determining
+    whether to delete a row we build a cache to store the result of CheckForFace where the url is the
+    key and a boolean is the value.
+    '''
+    link_dict = {}                                 #Create the cache
+    for index, row in data.iterrows():             #Iterate over all the rows in the csv 
+        for url in row:                            #Iterate over the links in each row
+            if url not in link_dict.keys():        #If the url is not in the cache
+                link_dict[url] = CheckForFace(url) #Add it to the cache
+        ###print(row[0], row[1], row[2])           ###DEBUGGING: Check
+        if (link_dict[row[0]] and link_dict[row[1]] and link_dict[row[2]]) != True:  #If any of the urls do not contain a face
+            data = data.drop([data.index[index]])  #Delete the row
+            print("Row {} Deleted".format(index))
 
-df = dataTrain.iloc[:,[0,5,10]]
-#print(df)
+    return data #Return the cleaned csv data
 
-i=0  #Counter for testing
-link_dict = {}
-
-for index, row in df.iterrows():
-    for url in row:
-        if url not in link_dict.keys():
-            link_dict[url] = CheckForFace(url)
-    ###print(row[0], row[1], row[2])
-    ###print("Row: {}".format(row))
-    if (link_dict[row[0]] and link_dict[row[1]] and link_dict[row[2]]) != True:
-        #Delete the row
-        df = df.drop([df.index[index]])
-        print("deleted row")
-    else:
-        print("row not deleted")
-
-    #print(index, row)
-    i+=1
-    if i == 25:
-        print(link_dict)
-        break
 #export_csv = df.to_csv (r'C:\Users\{}\Desktop\[Cleaned]text_emotions.csv'.format(getpass.getuser()), index = None, header=True)
-#url = "http://farm6.staticflickr.com/5033/14414157667_98383c7f1c_b.jpg"
 
-#CheckForFace(url)
-#df.iloc[index, row[0]]
+
+def MCP():
+    #Reads csv data files
+    dataTrain = pd.read_csv("Data\\faceexp-comparison-data-train-public.csv", error_bad_lines=False)
+    dataTest = pd.read_csv("Data\\faceexp-comparison-data-test-public.csv", error_bad_lines=False)
+    ###Grab the urls to the images
+    ###df = dataTrain.iloc[:,[0,5,10]]
+    '''
+    The problem with passing clean_data "dataTrain.iloc[:,[0,5,10]]" is it won't modify dataTrain accordingly.
+    We need to pass it the full dataset and then reference columns A,F, and K.
+    '''
+    #dataTrain = clean_data(training_data)
+
+MCP()
