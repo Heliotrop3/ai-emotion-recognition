@@ -26,15 +26,37 @@ def CheckForFace(url):
     )
 
     if ((len(faces)) == 0):
-        print("FASLE")
-        #return False
+        #print("FASLE")
+        return False
     else:
-        print("TRUE")
-        #return True
+        #print("TRUE")
+        return True
 
 
 #print(dataTrain.iloc[:,[0,5,10]])
 
-url = "http://farm6.staticflickr.com/5033/14414157667_98383c7f1c_b.jpg"
+df = dataTrain.iloc[:,[0,5,10]]
+print(df)
+i=0
+for index, row in df.iterrows():
+    print(index)
+    print(row[0], row[1], row[2])
+    #print("Row: {}".format(row))
 
-CheckForFace(url)
+    
+    if (CheckForFace(row[0]) and CheckForFace(row[1]) and CheckForFace(row[2])) != True:
+        #Delete the row
+        df = df.drop([df.index[index]])
+        print("deleted row")
+    else:
+        print("row not deleted")
+
+    #print(index, row)
+    i+=1
+    if i == 25:
+        break
+
+#url = "http://farm6.staticflickr.com/5033/14414157667_98383c7f1c_b.jpg"
+
+#CheckForFace(url)
+#df.iloc[index, row[0]]
