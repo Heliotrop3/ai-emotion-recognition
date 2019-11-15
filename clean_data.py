@@ -1,5 +1,6 @@
 import cv2, csv, urllib, getpass, os
 import pandas as pd
+import numpy as np
 from skimage import io
 
 '''
@@ -8,6 +9,7 @@ Checks whether or not a face is present in the image
 def CheckForFace(url):
     try:
         image = io.imread(url)                         #Grab the image located at the url
+
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -31,6 +33,9 @@ def CheckForFace(url):
             return True
     except urllib.error.HTTPError: #In the case the url leads to a dead page
         return False               #Then there exists no face at the link
+    except cv2.error:              #An unknown error in image reconition
+        print("cv2 Error")
+        return False               #so we assume there is no face at this image
 
 '''
 Given the FEC dataset, check whether the URL contains a face and if not remove the row from the csv
@@ -56,7 +61,7 @@ def clean_data(data):
 
 def save_csv(filename,data):
     print("Saving {}.csv to {}".format(filename,path))
-    path = r"C:\Users\{}\Desktop\[Cleaned]{}.csv".format(getpass.getuser(),filename)
+    path = r"C:\\Users\\{}\\Desktop\\[Cleaned]{}.csv".format(getpass.getuser(),filename)
     data.to_csv (path, index = None, header=True)
     print("File Saved")
 
@@ -65,7 +70,7 @@ def MCP():
     #Reads csv data files
     dataTrain = pd.read_csv("Data\\faceexp-comparison-data-train-public.csv", error_bad_lines=False)
     dataTest = pd.read_csv("Data\\faceexp-comparison-data-test-public.csv", error_bad_lines=False)
-    #dataTrain = clean_data(training_data)
+    dataTrain = clean_data(dataTrain)
     #dataTest = clean_data(dataTest)
     save_csv("Test",dataTrain)
 MCP()
