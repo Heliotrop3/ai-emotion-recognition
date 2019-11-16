@@ -60,7 +60,7 @@ def clean_data(data):
             print("Row {} Deleted".format(index))
             numDeleted += 1
         i += 1
-        if i == 10:
+        if i == 5000:
             print("Last Row: {}".format(index+1))
             print("Number of Rows Deleted: {}".format(numDeleted))
             ###for j in range(26, len(data.index)):
