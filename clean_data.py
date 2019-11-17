@@ -1,4 +1,4 @@
-import cv2, csv, urllib, getpass, os
+import cv2, csv, urllib,  os
 import pandas as pd
 import numpy as np
 from skimage import io
@@ -45,21 +45,30 @@ def clean_data(data):
     Some image links appear in more then one row. In order to optimize the time taken in determining
     whether to delete a row we build a cache to store the result of CheckForFace where the url is the
     key and a boolean is the value.
+   
+    Currently cleaning the entire training dataset would take just under 2  weeks. We may or may not decide
+    to split the dataset into smaller chunks and have each team member responsible for cleaning a portion of
+    the data. For now, we simply clean the first 5000 rows which gives us 15000 pictures to train on.
     '''
-    i = 0
-    numDeleted = 0
-    data = data.iloc[:,[0,5,10]]            #Grab the columns where the urls for the image are stored
-    link_dict = {}                                 #Create the cache
-    for index, row in data.iterrows():      #Iterate over all the rows in the csv 
-        for url in row:                            #Iterate over the links in each row
+    i = 0   ### Initialize a counter to keep track of the number 
+    numDeleted = 0                        #Initialize a counter to kep track of the number of deleted row
+    data = data.iloc[:,[0,5,10]]          #Grab the columns where the urls for the image are stored
+    link_dict = {}                        #Create the cache
+    for index, row in data.iterrows():    #Iterate over all the rows in the csv 
+        for url in row:                   #Iterate over the links in each row
             if url not in link_dict.keys():        #If the url is not in the cache
                 link_dict[url] = CheckForFace(url) #Add it to the cache
         ###print(row[0], row[1], row[2])           ###DEBUGGING: Print each link
         if (link_dict[row[0]] and link_dict[row[1]] and link_dict[row[2]]) != True:  #If any of the urls do not contain a face
             data = data.drop([data.index[index]])  #Delete the row in the CSV
             print("Row {} Deleted".format(index))
-            numDeleted += 1
-        i += 1
+            numDeleted += 1                        #Increment the deleted row counter by 1
+        else:                            ###If all rows contain a face
+            i += 1                       ###Increase the valid counter by 1 
+        '''
+        Once the dataset has 5000 valid rows of data we drop all rows after row 5000
+        and save the new test dataset to the project's data folder
+        '''
         if i == 5000:
             print("Last Row: {}".format(index+1))
             print("Number of Rows Deleted: {}".format(numDeleted))
@@ -70,10 +79,13 @@ def clean_data(data):
         
     return data #Return the cleaned csv data
 
+'''
+Save any modifications made to the data set in a new file into the github folder
+'''
 def save_csv(filename,data):
-    path = r"C:\Users\{}\Desktop\[Cleaned]{}.csv".format(getpass.getuser(),filename)
+    path = r"Data\[Cleaned]{}.csv".format(filename)    #Define the path
     print("Saving {}.csv to {}".format(filename,path))
-    data.to_csv(path, index = None, header=True)
+    data.to_csv(path, index = None, header=True)       #Save the data at path
     print("File Saved")
 
 
