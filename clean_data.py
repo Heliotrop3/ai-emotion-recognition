@@ -40,7 +40,7 @@ def CheckForFace(url):
 '''
 Given the FEC dataset, check whether the URL contains a face and if not remove the row from the csv
 '''
-def clean_data(data):
+def clean_data(filename,data):
     '''
     Some image links appear in more then one row. In order to optimize the time taken in determining
     whether to delete a row we build a cache to store the result of CheckForFace where the url is the
@@ -70,14 +70,12 @@ def clean_data(data):
         and save the new test dataset to the project's data folder
         '''
         if i == 5000:
-            print("Last Row: {}".format(index+1))
+            print("Last Row: {}".format(i))
             print("Number of Rows Deleted: {}".format(numDeleted))
-            ###for j in range(26, len(data.index)):
-             ###   data.drop(data.index[j])
-             ###   print("Row {} Deleted".format(j))
+            data = data.drop(data.index[[i+1,-1]])
+            save_csv(filename, data)
             break
-        
-    return data #Return the cleaned csv data
+    #return data #Return the cleaned csv data
 
 '''
 Save any modifications made to the data set in a new file into the github folder
@@ -85,15 +83,15 @@ Save any modifications made to the data set in a new file into the github folder
 def save_csv(filename,data):
     path = r"Data\[Cleaned]{}.csv".format(filename)    #Define the path
     print("Saving {}.csv to {}".format(filename,path))
-    data.to_csv(path, index = None, header=True)       #Save the data at path
+    data.to_csv(path, index = None, header=True)       #Save the data at path. Might have to use a try and except to catch if the file already exists
     print("File Saved")
 
 
 def MCP():
     #Reads csv data files
     dataTrain = pd.read_csv("Data\\faceexp-comparison-data-train-public.csv", error_bad_lines=False)
-    dataTest = pd.read_csv("Data\\faceexp-comparison-data-test-public.csv", error_bad_lines=False)
-    dataTrain = clean_data(dataTrain)
+    #dataTest = pd.read_csv("Data\\faceexp-comparison-data-test-public.csv", error_bad_lines=False)
+    dataTrain = clean_data("[Cleaned] Training Data",dataTrain)
     #dataTest = clean_data(dataTest)
     save_csv("TrainData",dataTrain)
 MCP()
