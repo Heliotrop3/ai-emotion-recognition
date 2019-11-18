@@ -8,11 +8,12 @@ Checks whether or not a face is present in the image
 '''
 def CheckForFace(url):
     try:
-        image = io.imread(url)                         #Grab the image located at the url
-
-        gray = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = io.imread(url)      #Grab the image located at the url
+        gray = cv2.cvtColor(image, cv2.COLOR_RGB2BGR) #Convert the image to the proper color schema
+       
+        #If the image is not greyscale then convert it
+        if not is_grey_scale(image):
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         #cv2.imshow('URL Image', image)
         #cv2.waitKey()
@@ -33,10 +34,33 @@ def CheckForFace(url):
             return True
     except urllib.error.HTTPError: #In the case the url leads to a dead page
         return False               #Then there exists no face at the link
-    except cv2.error:              #An unknown error in image reconition
-        print("cv2 Error")
-        return False               #so we assume there is no face at this image
+        ###The below exception should no longer be required as we are catching the greyscale images in the primary body
+    except cv2.error:              #If the image is already in grayscale the conversion to grayscale will fail
+        print("Cv2 Error: {}".format(url))
+        return False                #So we assume there is not a face at this image
 
+def is_grey_scale(image):
+    try:
+        width, height, channels = image.shape #Grab the width and height of the image
+        '''
+        If we attempt the above line on an already greyscaled image we get an error.
+        I'm not sure if this means this entire method could be reduced to:
+        
+        try:
+            width, height, channels = image.shape
+            return False
+        except ValueError:
+            return True
+        
+        More research would need to be done
+        '''
+    except ValueError:
+        return True
+    for i in range(width):                #Iterate over over each pixel of each row
+        for j in range(height):        
+            r,g,b = image[i,j]            #Determine if the pixels are already grey scaled is rgb
+            if r != g != b: return False  #If the pixels at the given poisition are all the same color then then the image is greyscaled
+    return True
 '''
 Given the FEC dataset, check whether the URL contains a face and if not remove the row from the csv
 '''
