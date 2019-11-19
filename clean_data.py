@@ -12,20 +12,23 @@ def CheckForFace(url):
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2BGR) #Convert the image to the proper color schema
        
         #If the image is not greyscale then convert it
-        if not is_grey_scale(image):
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        #if not is_grey_scale(image):
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        #cv2.imshow('URL Image', image)
-        #cv2.waitKey()
-
-        faceCascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+        faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
         faces = faceCascade.detectMultiScale(
             gray,
-            scaleFactor=1.3,
-            minNeighbors=3,
-            minSize=(30, 30)
+            scaleFactor=1.2,
+            minNeighbors=4,
+            minSize=(55, 55)
+           # flags = cv2.cv.CV_HAAR_SCALE_IMAGE
         )
+        for (x,y,w,h) in faces:
+            cv2.rectangle(image,(x,y),(x+w,y+h),(0,255,0),2)
 
+        cv2.imshow('URL Image', image)
+        cv2.waitKey()
+        
         if ((len(faces)) == 0):
             ###print("FASLE")     ###DEBUGGING: See the results of the face detection
             return False
@@ -51,7 +54,7 @@ def is_grey_scale(image):
             return False
         except ValueError:
             return True
-        
+         
         More research would need to be done
         '''
     except ValueError:
@@ -93,12 +96,15 @@ def clean_data(filename,data):
         Once the dataset has 5000 valid rows of data we drop all rows after row 5000
         and save the new test dataset to the project's data folder
         '''
-        if i == 5000:
-            print("Last Row: {}".format(i))
-            print("Number of Rows Deleted: {}".format(numDeleted))
-            data = data.drop(data.index[[i+1,-1]])
-            save_csv(filename, data)
-            break
+        ##if i == 5000:
+        ##    print("Last Row: {}".format(i))
+        ##    print("Number of Rows Deleted: {}".format(numDeleted))
+        ##    data = data.drop(data.index[[i+1,-1]])
+        ##    save_csv(filename, data)
+        ##     break
+    print("Number of Rows Deleted: {}".format(numDeleted))
+    data = data.drop(data.index[[i+1,-1]])
+    save_csv(filename, data)
     #return data #Return the cleaned csv data
 
 '''
