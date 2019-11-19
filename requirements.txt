@@ -1,0 +1,7 @@
+cv2
+urllib
+pandas
+numpy
+skimage
+tensorflow
+fastai
