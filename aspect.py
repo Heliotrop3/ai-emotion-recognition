@@ -13,26 +13,27 @@ import matplotlib.pyplot as plt
 train_file = r"Data\faceexp-comparison-data-train-public.csv"
 test_file  = r"Data\\faceexp-comparison-data-test-public.csv" 
 
-cleanedTrainData = r"Data\\[Cleaned]TrainData.csv" 
+cleanedTrain_file = r"Data\\[Cleaned]TrainData.csv" 
 
 #Reads csv data files
 train_data = pd.read_csv(train_file, error_bad_lines=False)
 test_data  = pd.read_csv(test_file, error_bad_lines=False)
 
+cleanedTrain_data = pd.read_csv(cleanedTrain_file, error_bad_lines=False)
+
 #Print the size of the data sets by printing the number of rows
 #and multiplying the result by 3 as there are 3 images per row
-print("Number of Training Images  : {}".format(cleanedTrainData.shape[0]*3))
+print("Number of Training Images  : {}".format(cleanedTrain_data.shape[0]*3))
 print("Number of Validation Images: {}".format(test_data.shape[0]*3))
 
 batch_size = 128
 epochs = 15
 #Need to determine image height and width
 
-'''
+
 #Downloads Images from csv file
 def download_class(c):
-    path = Path(base_dir + 'data/'+topic)
+    path = 'C:\Users\natet\Documents\GitHub\ai-emotion-recognition'
     dest = path/c
     file = cleanedTrainData
     download_images(path/file, dest, max_pics=2000, timeout=1)
-'''
