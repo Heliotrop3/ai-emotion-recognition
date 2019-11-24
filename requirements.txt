@@ -1,7 +1,5 @@
-cv2
-urllib
 pandas
 numpy
-skimage
+scikit-image
 tensorflow
 fastai
