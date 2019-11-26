@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
-import getpass
-import os
+import getpass, os
 import tensorflow as tf
 import pandas as pd
 import numpy as np
@@ -24,18 +23,24 @@ basePath = r"C:\Users\{}\Documents\GitHub\ai-emotion-recognition".format(getpass
 training_folder = r"{}\Train_Data".format(basePath)
 validation_folder  = r"{}\Test_Data".format(basePath)
 
+'''
+In order to recognize emotion we might need to provide the sentiment to the machine...
+
 #Define the path to the sentiment
 path_to_sentiment = r"\Data\csv_file.csv"
-#Grab the first row of the csv file
+
+
+'''
+
 
 #Find the number of training and validation images we have
 num_training_imgs = len(os.listdir(training_folder))
 num_of_valid_imgs = len(os.listdir(validation_folder))
 print("Total Training Images  : ",num_training_imgs)
-print("Total Validation Images: ",num_training_imgs)
+print("Total Validation Images: ",num_of_valid_imgs)
 
 batch_size = 128
-epochs = 15
+epochs = 40
 IMG_HEIGHT = 48
 IMG_WIDTH = 48
 
@@ -47,23 +52,20 @@ validation_image_generator = ImageDataGenerator(rescale=1./255)
 train_data_gen = train_image_generator.flow_from_directory(batch_size=batch_size, directory=training_folder,shuffle=True,target_size=(IMG_HEIGHT,IMG_WIDTH),class_mode='binary')
 val_data_gen = train_image_generator.flow_from_directory(batch_size=batch_size, directory=validation_folder,shuffle=True,target_size=(IMG_HEIGHT,IMG_WIDTH),class_mode='binary')
 
-#Show some of the training data
-sample_training_images, _ = next(train_data_gen)
-
 #The actual neural net with dropout
 model = Sequential([
     Conv2D(16, 3, padding='same', activation='relu', 
            input_shape=(IMG_HEIGHT, IMG_WIDTH ,3)),
     MaxPooling2D(),
-    Dropout(0.2),
+    Dropout(0.3),
     Conv2D(32, 3, padding='same', activation='relu'),
     MaxPooling2D(),
     Conv2D(64, 3, padding='same', activation='relu'),
     MaxPooling2D(),
-    Dropout(0.2),
+    Dropout(0.3),
     Flatten(),
     Dense(512, activation='relu'),
-    Dense(1, activation='sigmoid')
+    Dense(1,activation='sigmoid')
 ])
 #Compile the above neural net
 model.compile(optimizer='adam',
@@ -73,13 +75,20 @@ model.compile(optimizer='adam',
 #Take a look at the overview of the model
 model.summary()
 
+checkpoint_dir = './training_checkpoints/'                        #Directory where the checkpoints will be saved
+checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt_{epoch}")  #Name of the checkpoint files
+
+checkpoint_callback=tf.keras.callbacks.ModelCheckpoint(
+    filepath=checkpoint_prefix,
+    save_weights_only=True)
+
 #Train the network
-history = model.fit_generator(
-    train_data_gen,
+history = model.fit_generator(train_data_gen, 
     steps_per_epoch=num_training_imgs // batch_size,
     epochs=epochs,
     validation_data=val_data_gen,
-    validation_steps=num_of_valid_imgs // batch_size
+    validation_steps=num_of_valid_imgs // batch_size,
+    callbacks=[checkpoint_callback]
 )
 
 #View the results
