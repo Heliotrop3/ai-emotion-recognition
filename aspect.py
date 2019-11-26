@@ -1,5 +1,6 @@
-import os
 from __future__ import absolute_import, division, print_function, unicode_literals
+import getpass
+import os
 import tensorflow as tf
 import pandas as pd
 import numpy as np
@@ -19,8 +20,9 @@ def plotImages(images_arr):
     plt.show()
 
 #Define the paths to the respective data sets
-training_folder = r"\Data\Train"
-validation_folder  = r"\Data\Test"
+basePath = r"C:\Users\{}\Documents\GitHub\ai-emotion-recognition".format(getpass.getuser())
+training_folder = r"{}\Train_Data".format(basePath)
+validation_folder  = r"{}\Test_Data".format(basePath)
 
 #Define the path to the sentiment
 path_to_sentiment = r"\Data\csv_file.csv"
@@ -74,10 +76,10 @@ model.summary()
 #Train the network
 history = model.fit_generator(
     train_data_gen,
-    steps_per_epoch=total_train // batch_size,
+    steps_per_epoch=num_training_imgs // batch_size,
     epochs=epochs,
     validation_data=val_data_gen,
-    validation_steps=total_val // batch_size
+    validation_steps=num_of_valid_imgs // batch_size
 )
 
 #View the results
