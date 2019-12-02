@@ -19,12 +19,12 @@ from keras.models import load_model
 BASEPATH = r'C:\Users\{}\Documents\GitHub\ai-emotion-recognition'.format(getpass.getuser())
 sys.path.insert(0, BASEPATH)
 os.chdir(BASEPATH)
-MODELPATH = r'{}\Models'.format(BASEPATH)
+MODELPATH = './models/model.h5'
 
 num_features = 64
 num_labels = 7
 batch_size = 64
-epochs = 100
+epochs = 10
 width, height = 48, 48
 
 data = pd.read_csv(r'{}\Data\fer2013.csv'.format(BASEPATH))
