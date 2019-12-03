@@ -23,16 +23,6 @@ basePath = r"C:\Users\{}\Documents\GitHub\ai-emotion-recognition".format(getpass
 training_folder = r"{}\Train_Data".format(basePath)
 validation_folder  = r"{}\Test_Data".format(basePath)
 
-'''
-In order to recognize emotion we might need to provide the sentiment to the machine...
-
-#Define the path to the sentiment
-path_to_sentiment = r"\Data\csv_file.csv"
-
-
-'''
-
-
 #Find the number of training and validation images we have
 num_training_imgs = len(os.listdir(training_folder))
 num_of_valid_imgs = len(os.listdir(validation_folder))
