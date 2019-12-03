@@ -24,7 +24,7 @@ MODELPATH = './models/model.h5'
 num_features = 64
 num_labels = 7
 batch_size = 64
-epochs = 10
+epochs = 40
 width, height = 48, 48
 
 data = pd.read_csv(r'{}\Data\fer2013.csv'.format(BASEPATH))
