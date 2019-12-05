@@ -22,7 +22,7 @@ Given the path to the file, return the name of the file
 def find_file_name(file_path):
    filename = re.split('/', file_path)[-1]
    extension = filename.split('.',1)[1]
-   print(extension)
+   ###print(extension)
    return filename, extension
 
 '''
@@ -34,10 +34,10 @@ def message_box(title, text, style):
 
 def open_file():
     #Restrict the filetype to accept only texts
-    ftypes = [('JPEG', '*.jpeg'),('PNG','*.png')]
+    ftypes = [('JPG', '*.jpg'),('PNG','*.png')]
     #Grab a list of valid file extensions
     image_types = [ftypes[i][1][2:] for i in range(len(ftypes))]
-    print(image_types)
+    ###print(image_types)
     is_valid = False
     while(is_valid == False):
         file_path = filedialog.askopenfilename(filetypes=ftypes)
@@ -56,18 +56,19 @@ def open_file():
             any file that doesn't end with a .txt
             '''
             filename,extenstion = find_file_name(file_path)
-            print(extenstion)
+            ###print(extenstion)
             if extenstion not in image_types:
                message_box("Error: Invalid File Type","Chosen file is not a text file\nPlease try again. ",0)
             else:
                 try:
-                    with open(file_path, 'r+') as f:
-                        text = f.read()                
+                    with open(file_path, 'r+', errors='ignore') as f:
+                        text = f.read()     
+                        print("File Uploaded!")           
                     is_valid = True
                 except PermissionError:
                     print("Error: Operation requires elevated privilege\nTry runnin the program as an admin")
                     sys.exit(0)
-    return file_path
+    return detect_emotion_picture(file_path)
 
 '''
 Use a pre-trained CNN to detect whether or not a face exists
@@ -92,14 +93,58 @@ def face_exists(path_to_image):
         print("There exists no faces :(")
         return False
 
-def detect_emotion_picture():
-    pass
+#Adapted from:
+#https://github.com/gitshanks/fer2013/blob/master/fertestcustom.py
+def detect_emotion_picture(file_path):
+    print("Working...")
+    #Loads model
+    model = load_model(r"Models\model_64_40Epochs.h5")
+
+    #sets variables
+    WIDTH = 48
+    HEIGHT = 48
+    x=None
+    y=None
+    labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+
+    #Load image
+    image = cv2.imread(file_path)   ######"test.jpg"
+
+    #Resize image if it is too large
+    if image.shape[0] > 1000 or image.shape[1] > 2000:
+        scale_percent = 25 #percent of original size
+        width = int(image.shape[1] * scale_percent / 100)
+        height = int(image.shape[0] * scale_percent / 100)
+        dim = (width, height)
+        image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
+
+    #CV2 Stuff for face reconition
+    gray=cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
+    face = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+    faces = face.detectMultiScale(gray, 1.3  , 10)
+
+    #CV2 Ditects face and our model predicts emotion on face
+    for (x, y, w, h) in faces:
+            roi_gray = gray[y:y + h, x:x + w]
+            cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray, (48, 48)), -1), 0)
+            cv2.normalize(cropped_img, cropped_img, alpha=0, beta=1, norm_type=cv2.NORM_L2, dtype=cv2.CV_32F)
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 1)
+            #predicting the emotion
+            yhat= model.predict(cropped_img)
+            cv2.putText(image, labels[int(np.argmax(yhat))], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 1, cv2.LINE_AA)
+            print("Emotion: "+labels[int(np.argmax(yhat))])
+
+    #Shows image
+    cv2.imshow('{} Picture Emotion'.format(file_path), image)
+    cv2.waitKey()
 
 def detect_emotion_webcam():
+    print("Opening Webcam...")
     emotion_dict = {0: "Angry", 1: "Disgust", 2: "Fear", 3: "Happy", 4: "Sad", 5: "Surprise", 6: "Neutral"}
     model = load_model(r"Models\model_64_40Epochs.h5")
     run = True
     cap = cv2.VideoCapture(0)
+    hasOpened = False
     while run:
         ret, frame = cap.read()
 
@@ -115,10 +160,17 @@ def detect_emotion_webcam():
             cv2.normalize(cropped_img, cropped_img, alpha=0, beta=1, norm_type=cv2.NORM_L2, dtype=cv2.CV_32F)
             prediction = model.predict(cropped_img)
             cv2.putText(frame, emotion_dict[int(np.argmax(prediction))], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 1, cv2.LINE_AA)
+        
+        opened = True
+        if opened and not hasOpened:
+            print("Webcam Opened!")
+            hasOpened = True
 
-        cv2.imshow('frame', frame)
+        cv2.imshow('Webcam Emotion Face Recognition', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             run = False
+            print("Webcam Closed!")
+
     cap.release()
     cv2.destroyAllWindows()
 
@@ -143,7 +195,8 @@ filemenu.add_separator()
 filemenu.add_command(label="Use Webcam", command=donothing)
 filemenu.add_separator()
 filemenu.add_command(label="Exit", command=root.quit)
-menubar.add_cascade(label="File", menu=filemenu)
+filemenu.add_separator()
+menubar.add_cascade(label="Aspect 1.1", menu=filemenu)
 ########################################
 
 
