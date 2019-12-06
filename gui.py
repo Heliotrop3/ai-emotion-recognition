@@ -164,6 +164,7 @@ def detect_emotion_webcam():
         opened = True
         if opened and not hasOpened:
             print("Webcam Opened!")
+            print("To close webcam press the q key on your keyboard!")
             hasOpened = True
 
         cv2.imshow('Webcam Emotion Face Recognition', frame)
