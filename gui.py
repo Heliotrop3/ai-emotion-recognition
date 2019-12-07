@@ -167,7 +167,7 @@ def detect_emotion_webcam():
             print("To close webcam press the q key on your keyboard!")
             hasOpened = True
 
-        cv2.imshow('Webcam Emotion Face Recognition', frame)
+        cv2.imshow('Webcam Emotion Face Recognition     Use Q on Keyboard to Quit', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             run = False
             print("Webcam Closed!")
@@ -179,17 +179,52 @@ def detect_emotion_webcam():
 #Create the instnace of tkinter
 root = Tk()
 root.geometry("700x700")
+root.resizable(0,0) #Can't resize image
+backgroundColor='#89cff0'
+root.configure(background=backgroundColor)
 #Create the menu object
 menubar = Menu(root)
 #Make canvas scalable
 main_window = PanedWindow(orient=VERTICAL)
-main_window.pack(fill=BOTH, expand=2)
+main_window.configure(background=backgroundColor)
+main_window.pack()
 
-top = Button(main_window, text="Upload Photo", command = open_file)
+#scrollbar = Scrollbar(root)
+#scrollbar.pack( side = RIGHT, fill = Y )
+#scrollbar.config( command = main_window )
+
+title = Label(main_window, text="Aspect 1.1",wraplength=650,justify=LEFT,background=backgroundColor,font=("arial",24))
+main_window.add(title)
+
+authors = Label(main_window,background=backgroundColor, text="Nate, Tyler, Terry, Josh A., Josh S.",wraplength=650,justify=LEFT,font=("arial",10))
+main_window.add(authors)
+
+space = Label(main_window,background=backgroundColor, text="",wraplength=650,justify=LEFT,font=("arial",14))
+main_window.add(space)
+
+description = Label(main_window,background=backgroundColor, text="Aspect 1.1 uses CV2's face recognition to detect a face and then uses our trained model from the fer2013 dataset to detect emotion present in the faces.  Aspect 1.1 will take an image or video feed and draw a box around the face (CV2) and then will show the emotion of the faces present.  To use this app you can either upload your own image or use your computers webcam to get a live video feed with the emotion detection.", wraplength=650,justify=LEFT ,font=("arial",12))
+main_window.add(description)
+
+space = Label(main_window,background=backgroundColor, text="",wraplength=650,justify=LEFT,font=("arial",14))
+main_window.add(space)
+
+pic_label = Label(main_window,background=backgroundColor, text="Click the button below to upload your own photo:",wraplength=650,justify=LEFT,font=("arial",15))
+main_window.add(pic_label)
+
+top = Button(main_window,background='#89bda0', text="Upload Photo", width=10, height=10,justify=CENTER,command = open_file)
 main_window.add(top)
 
-bottom = Button(main_window, text="Webcam",command = detect_emotion_webcam)
+webcam_label = Label(main_window,background=backgroundColor, text="Click the button below to use your webcam:",wraplength=650,justify=LEFT,font=("arial",15))
+main_window.add(webcam_label)
+
+bottom = Button(main_window,background='#c482ad', text="Webcam",width=10, height=10,justify=CENTER,command = detect_emotion_webcam)
 main_window.add(bottom)
+
+space = Label(main_window,background=backgroundColor, text="",wraplength=650,justify=LEFT,font=("arial",14))
+main_window.add(space)
+
+note = Label(main_window,background=backgroundColor, text="**No user data is saved in using this app**",wraplength=650,justify=LEFT,font=("arial",10))
+main_window.add(note)
 
 menubar = Menu(root)
 filemenu = Menu(menubar, tearoff=0)
@@ -198,7 +233,7 @@ filemenu.add_separator()
 filemenu.add_command(label="Use Webcam", command=donothing)
 filemenu.add_separator()
 filemenu.add_command(label="Exit", command=root.quit)
-menubar.add_cascade(label="Aspect", menu=filemenu)
+menubar.add_cascade(label="Menu", menu=filemenu)
 ########################################
 
 #Name the title bar
