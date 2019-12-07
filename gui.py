@@ -178,10 +178,12 @@ def detect_emotion_webcam():
 #######################################
 #Create the instnace of tkinter
 root = Tk()
+root.geometry("700x700")
+#Create the menu object
 menubar = Menu(root)
 #Make canvas scalable
 main_window = PanedWindow(orient=VERTICAL)
-main_window.pack(fill=BOTH, expand=1)
+main_window.pack(fill=BOTH, expand=2)
 
 top = Button(main_window, text="Upload Photo", command = open_file)
 main_window.add(top)
@@ -196,13 +198,11 @@ filemenu.add_separator()
 filemenu.add_command(label="Use Webcam", command=donothing)
 filemenu.add_separator()
 filemenu.add_command(label="Exit", command=root.quit)
-filemenu.add_separator()
-menubar.add_cascade(label="Aspect 1.1", menu=filemenu)
+menubar.add_cascade(label="Aspect", menu=filemenu)
 ########################################
 
-
 #Name the title bar
-root.title("Aspect")
+root.title("Aspect 1.1")
 root.config(menu=menubar)
 #Start the loop
 root.mainloop()
