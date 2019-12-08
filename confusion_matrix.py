@@ -39,15 +39,23 @@ X_train, X_test, y_train, y_test = train_test_split(faces, emotions, test_size=0
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=41)
 
 
-scores = model.evaluate(np.array(X_test), np.array(y_test), batch_size=batch_size)
+#scores = model.evaluate(np.array(X_test), np.array(y_test), batch_size=batch_size)
 
-print("Loss: " + str(scores[0]))
-print("Accuracy: " + str(scores[1]))
+#print("Loss: " + str(scores[0]))
+#print("Accuracy: " + str(scores[1]))
 
-model.fit(1)
-preds,y,losses = model.get_preds(with_loss=True)
-interp = ClassificationInterpretation(model, preds, y, losses)
+y_pred = model.predict_classes(np.array(X_test), batch_size=batch_size, verbose=0)
+#y_pred = max(y_pred)
+#y_pred = (y_pred > .5 )
+#y_pred = np.argmax(y_pred, axis=1)
+confusion = confusion_matrix(np.array(y_test), np.array(y_pred))
+print(confusion)
 
-interp = ClassificationInterpretation.from_learner(learn)
+
+#print(X_test)
+#Y_pred = model.predict_generator((np.array(X_test), np.array(y_test)), 7174 // batch_size+1)
+#y_pred = np.argmax(Y_pred, axis=1)
+#print('Confusion Matrix')
+#print(confusion_matrix((np.array(X_test), np.array(y_test)).classes, y_pred))
 
 #print(confusion_matrix(y_test, y_val))
