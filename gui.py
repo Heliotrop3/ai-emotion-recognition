@@ -211,13 +211,13 @@ main_window.add(space)
 pic_label = Label(main_window,background=backgroundColor, text="Click the button below to upload your own photo:",wraplength=650,justify=LEFT,font=("arial",15))
 main_window.add(pic_label)
 
-top = Button(main_window,background='#89bda0', text="Upload Photo", width=10, height=10,justify=CENTER,command = open_file)
+top = Button(main_window,background='#89bda0', text="Upload Photo", width=4, height=4,justify=CENTER, font=("arial",20), command = open_file)
 main_window.add(top)
 
 webcam_label = Label(main_window,background=backgroundColor, text="Click the button below to use your webcam:",wraplength=650,justify=LEFT,font=("arial",15))
 main_window.add(webcam_label)
 
-bottom = Button(main_window,background='#c482ad', text="Webcam",width=10, height=10,justify=CENTER,command = detect_emotion_webcam)
+bottom = Button(main_window,background='#c482ad', text="Webcam",width=4, height=4,justify=CENTER,font=("arial",20),command = detect_emotion_webcam)
 main_window.add(bottom)
 
 space = Label(main_window,background=backgroundColor, text="",wraplength=650,justify=LEFT,font=("arial",14))
