@@ -10,7 +10,7 @@ from keras.models import load_model
 try :from tkinter import filedialog
 except ImportError: import tkFileDialog as filedialog
 
-#Placeholder Function
+#A Placeholder function that does nothing...
 def donothing():
    filewin = Toplevel(root)
    button = Button(filewin, text="Do nothing button")
@@ -32,13 +32,19 @@ If the user attempts to open anything other than a text file throw an error and 
 def message_box(title, text, style):
     return ctypes.windll.user32.MessageBoxW(0, text, title, style)
 
+'''
+Prompt the user to select a file from their hard drive. If the file is valid then process the file
+otherwise keep them trapped in the file prompt until they play by the rules or exit the program
+'''
 def open_file():
     #Restrict the filetype to accept only texts
     ftypes = [('JPG', '*.jpg'),('PNG','*.png')]
     #Grab a list of valid file extensions
     image_types = [ftypes[i][1][2:] for i in range(len(ftypes))]
+    ##DEBUGGING: See the files the program has identified as valid
     ###print(image_types)
     is_valid = False
+    #Trap the user in a loop until they either choose a valid file or exit the gui prompt
     while(is_valid == False):
         file_path = filedialog.askopenfilename(filetypes=ftypes)
         '''
@@ -46,17 +52,24 @@ def open_file():
         free from the while loop
         '''
         if (file_path == ''):
-            ###print("Filepath is false")
-            is_valid = True
+           is_valid = True
         else:
-            ###print(file_path)
             '''
             ftypes still allow other input such as internet shortcuts so we're
             going to have to check the file extension and throw an error for
             any file that doesn't end with a .txt
             '''
+            #Grab the extension of the file
             filename,extenstion = find_file_name(file_path)
+            ###DEBUGGING: See the file extension
             ###print(extenstion)
+            '''
+            If the extension is not one of the valid extensions we attempt to read the file in.
+            We catch the case where the user requires elevated privliges to upload a given file.
+
+            If the file is not of a valid image type, display a popup box letting the user know as much
+            and forcing them to choose again.
+            '''
             if extenstion not in image_types:
                message_box("Error: Invalid File Type","Chosen file is not a text file\nPlease try again. ",0)
             else:
@@ -74,7 +87,7 @@ def open_file():
 Use a pre-trained CNN to detect whether or not a face exists
 '''
 def face_exists(path_to_image):
-    image = Image.open(open(path_to_image,'rb'))
+    image = Image.open(open(path_to_image,'rb'))   #Open the image
 
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)  #Convert the image to the proper color schema
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) #If the image is not greyscale then convert it
@@ -97,40 +110,32 @@ def face_exists(path_to_image):
 #https://github.com/gitshanks/fer2013/blob/master/fertestcustom.py
 def detect_emotion_picture(file_path):
     print("Working...")
-    #Loads model
-    model = load_model(r"Models\model_64_40Epochs.h5")
-
-    #sets variables
-    WIDTH = 48
-    HEIGHT = 48
-    x=None
-    y=None
+    model = load_model(r"Models\model_64_40Epochs.h5")  #Load the model
     labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
-
-    #Load image
-    image = cv2.imread(file_path)   ######"test.jpg"
+    image = cv2.imread(file_path)                       #Load image
 
     #Resize image if it is too large
     if image.shape[0] > 1000 or image.shape[1] > 2000:
-        scale_percent = 25 #percent of original size
-        width = int(image.shape[1] * scale_percent / 100)
-        height = int(image.shape[0] * scale_percent / 100)
-        dim = (width, height)
-        image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
+        scale_percent = 25                                 #Scale the image x% of its original size
+        width = int(image.shape[1] * scale_percent / 100)  #Define the width
+        height = int(image.shape[0] * scale_percent / 100) #Define the height
+        dim = (width, height)                              #Set the dimension
+        image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA) #Resize the image according to the above definitions
 
-    #CV2 Stuff for face reconition
-    gray=cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
-    face = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-    faces = face.detectMultiScale(gray, 1.3  , 10)
+    #Use CV2 to check for a face
+    gray=cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)                         #Convert the image to grayscale
+    face = cv2.CascadeClassifier('haarcascade_frontalface_default.xml') #Use CV2's classifier to determine whether a face exists in the photo
+    faces = face.detectMultiScale(gray, 1.3  , 10)                      #Grab all detected faces
 
-    #CV2 Ditects face and our model predicts emotion on face
+    #Draw a square around the face 
     for (x, y, w, h) in faces:
             roi_gray = gray[y:y + h, x:x + w]
             cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray, (48, 48)), -1), 0)
             cv2.normalize(cropped_img, cropped_img, alpha=0, beta=1, norm_type=cv2.NORM_L2, dtype=cv2.CV_32F)
             cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 1)
-            #predicting the emotion
+            #Predict the emotion
             yhat= model.predict(cropped_img)
+            #Label the emotion
             cv2.putText(image, labels[int(np.argmax(yhat))], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 1, cv2.LINE_AA)
             print("Emotion: "+labels[int(np.argmax(yhat))])
 
@@ -138,107 +143,124 @@ def detect_emotion_picture(file_path):
     cv2.imshow('{} Picture Emotion'.format(file_path), image)
     cv2.waitKey()
 
+'''
+Use the model to predict emotion of multiple faces in real time
+'''
 def detect_emotion_webcam():
     print("Opening Webcam...")
-    emotion_dict = {0: "Angry", 1: "Disgust", 2: "Fear", 3: "Happy", 4: "Sad", 5: "Surprise", 6: "Neutral"}
-    model = load_model(r"Models\model_64_40Epochs.h5")
-    run = True
-    cap = cv2.VideoCapture(0)
+    emotion_dict = {0: "Angry", 1: "Disgust", 2: "Fear", 3: "Happy", 4: "Sad", 5: "Surprise", 6: "Neutral"} #Define the possible emotions
+    model = load_model(r"Models\model_64_40Epochs.h5")   #Load the model              
+    cap = cv2.VideoCapture(0)                            #Grab the webcam device
     hasOpened = False
-    while run:
-        ret, frame = cap.read()
+    '''
+    Capture the input from the webcam until the user exits out of the program
+    '''
+    while True:
+        ret, frame = cap.read()                         #Grab the frame
 
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  #Convert to grayscale
 
-        face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+        face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml') #Detect the faces
+        faces = face_cascade.detectMultiScale(gray, 1.3, 5) #Define where the faces are on the image
 
+        #Draw a square around the boxes
         for (x, y, w, h) in faces:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 1)
             roi_gray = gray[y:y + h, x:x + w]
             cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray, (48, 48)), -1), 0)
             cv2.normalize(cropped_img, cropped_img, alpha=0, beta=1, norm_type=cv2.NORM_L2, dtype=cv2.CV_32F)
+            #Predict the emotion
             prediction = model.predict(cropped_img)
+            #Put the predicted emotion text into the proper box
             cv2.putText(frame, emotion_dict[int(np.argmax(prediction))], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 1, cv2.LINE_AA)
         
-        opened = True
-        if opened and not hasOpened:
+        if not hasOpened:
             print("Webcam Opened!")
             print("To close webcam press the q key on your keyboard!")
             hasOpened = True
 
         cv2.imshow('Webcam Emotion Face Recognition     Use Q on Keyboard to Quit', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
-            run = False
             print("Webcam Closed!")
+            break
 
     cap.release()
     cv2.destroyAllWindows()
 
 #######################################
-#Create the instnace of tkinter
-root = Tk()
-root.geometry("700x700")
-root.resizable(0,0) #Can't resize image
-backgroundColor='#89cff0'
-root.configure(background=backgroundColor)
-#Create the menu object
-menubar = Menu(root)
-#Make canvas scalable
-main_window = PanedWindow(orient=VERTICAL)
-main_window.configure(background=backgroundColor)
-main_window.pack()
+root = Tk()               #Create the instnace of tkinter
+root.geometry("700x700")  #Set the size of the window on startup
+root.resizable(0,0)       #Make the user unable to resize tkinter window
+backgroundColor='#89cff0' #Define the background color
+root.configure(background=backgroundColor) #Set the background color
 
-#scrollbar = Scrollbar(root)
-#scrollbar.pack( side = RIGHT, fill = Y )
-#scrollbar.config( command = main_window )
+menubar = Menu(root)                        #Create the menu object
+main_window = PanedWindow(orient=VERTICAL)  #Make canvas scalable
+main_window.configure(background=backgroundColor) #Set the background function for the main window
+main_window.pack()                                
 
+'''
+This section adds the text, buttons, and other garnishing for the gui
+'''
+#Adds the title of the project
 title = Label(main_window, text="Aspect 1.1",wraplength=650,justify=LEFT,background=backgroundColor,font=("arial",24))
 main_window.add(title)
 
+#Add the authors of the project
 authors = Label(main_window,background=backgroundColor, text="Nate, Tyler, Terry, Josh A., Josh S.",wraplength=650,justify=LEFT,font=("arial",10))
 main_window.add(authors)
 
+#Add a space between the authors and the description
 space = Label(main_window,background=backgroundColor, text="",wraplength=650,justify=LEFT,font=("arial",14))
 main_window.add(space)
 
+#Add the description of the project
 description = Label(main_window,background=backgroundColor, text="Aspect 1.1 uses CV2's face recognition to detect a face and then uses our trained model from the fer2013 dataset to detect emotion present in the faces.  Aspect 1.1 will take an image or video feed and draw a box around the face (CV2) and then will show the emotion of the faces present.  To use this app you can either upload your own image or use your computers webcam to get a live video feed with the emotion detection.", wraplength=650,justify=LEFT ,font=("arial",12))
 main_window.add(description)
 
+#Add a space between the description and the picture label
 space = Label(main_window,background=backgroundColor, text="",wraplength=650,justify=LEFT,font=("arial",14))
 main_window.add(space)
 
+#Add text for the phot upload button
 pic_label = Label(main_window,background=backgroundColor, text="Click the button below to upload your own photo:",wraplength=650,justify=LEFT,font=("arial",15))
 main_window.add(pic_label)
 
+#Add the button for uploading a photo
 top = Button(main_window,background='#89bda0', text="Upload Photo", width=4, height=4,justify=CENTER, font=("arial",20), command = open_file)
 main_window.add(top)
 
+#Add the text for the button for using the webcam
 webcam_label = Label(main_window,background=backgroundColor, text="Click the button below to use your webcam:",wraplength=650,justify=LEFT,font=("arial",15))
 main_window.add(webcam_label)
 
+#Add the button for utilizing the webcam for real time emotion recognition
 bottom = Button(main_window,background='#c482ad', text="Webcam",width=4, height=4,justify=CENTER,font=("arial",20),command = detect_emotion_webcam)
 main_window.add(bottom)
 
+#Add a space between the webcam button and the closing note
 space = Label(main_window,background=backgroundColor, text="",wraplength=650,justify=LEFT,font=("arial",14))
 main_window.add(space)
 
+#Add a hobbit size note regarding about user's privacy (i.e We are not storing their face)
 note = Label(main_window,background=backgroundColor, text="**No user data is saved in using this app**",wraplength=650,justify=LEFT,font=("arial",10))
 main_window.add(note)
 
+'''
+Create a file menu button that will allow the user the same functionality as the main program
+The labels for the add_command function are pretty self-explanatory...
+'''
 menubar = Menu(root)
 filemenu = Menu(menubar, tearoff=0)
-filemenu.add_command(label="Upload Photo", command=donothing)
+filemenu.add_command(label="Upload Photo", command=open_file)
 filemenu.add_separator()
-filemenu.add_command(label="Use Webcam", command=donothing)
+filemenu.add_command(label="Use Webcam", command=detect_emotion_webcam)
 filemenu.add_separator()
 filemenu.add_command(label="Exit", command=root.quit)
 menubar.add_cascade(label="Menu", menu=filemenu)
 ########################################
 
-#Name the title bar
-root.title("Aspect 1.1")
-root.config(menu=menubar)
-#Start the loop
-root.mainloop()
+root.title("Aspect 1.1")  #Set the title for the window
+root.config(menu=menubar) #Add the menu bar
+root.mainloop()           #Start the window
 
